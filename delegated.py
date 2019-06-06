@@ -10,7 +10,7 @@ class attr_proxy(property):
             if isinstance(supervisor, dict):
                 supervisorsetter = lambda k, v: supervisor.update({k: v})
             else:
-                supervisorsetter = lambda value: setattr(supervisor, attr_name, value)
+                supervisorsetter = lambda k, value: setattr(supervisor, k, value)
         else:
             supervisorsetter = lambda *a: None
 

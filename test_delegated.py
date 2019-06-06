@@ -1,5 +1,5 @@
 import pytest
-from delegated import attr_proxy, method_proxy, delegated
+from .delegated import attr_proxy, method_proxy, delegated
 
 
 class Subordinate():
