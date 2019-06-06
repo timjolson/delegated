@@ -1,26 +1,40 @@
 # delegated
 python3 decorator, method proxy, attribute proxy to delegate tasks to a sub-object
 
-    delegated.attr_proxy  # property object, allows access to another object's attribute
-    delegated.method_proxy  # property method, allows access to another object's method
+    from delegated import delegated, attr_proxy
 
-    from delegated import delegated
-    delegated  # class, use as method decorator
+    attr_proxy  # property object, allows access to another object's attribute/method
+
+    delegated  # class, use as method decorator and as namespace for:
+               # attribute(), attributes(), method(), methods()
+
+Decorator usage
+
+    # Note: the defined methods' signature (parameters, etc.) is irrelevant."""
     
+    class Master():
+        ...
+
+        @delegated('name_of_sub_component')
+        def same_name_as_sub_component_method(self): pass
+
+        @delegated('name_of_sub_component', 'name_of_sub_component_method')
+        def whatever_method_name(self): pass
+
+        ...
+
     # methods
     delegated.attribute   # returns attr_proxy
     delegated.attributes  # returns [attr_proxy, ...]
     delegated.method      # returns method_proxy
     delegated.methods     # returns [method_proxy, ...]
-
-
-Use the decorator inside a class definition
-
-    @delegated('name_of_sub_component')
-    def same_name_as_sub_component_method(self): pass
     
-    @delegated('name_of_sub_component', 'name_of_sub_component_method')
-    def whatever_method_name(self): pass
+    # when provided a 3rd parameter of '' (empty string), the above
+    # methods will attach the delegated item to the containing class
+    # e.g.
+    class Master():
+        sub = Subordinate()
+        delegated.attribute('sub', 'attr_of_sub_name', '')
     
 
 Main usage case:
@@ -56,7 +70,7 @@ Main usage case:
 
     class DecoratedMaster(Master):
         """Decorating allows for renaming and code completion for methods.
-        Note: defined methods' parameter structure is ignored"""
+        Note: the defined methods' signature (parameters, etc.) is irrelevant."""
         # simple
         @delegated('sub')
         def method1(self):pass
@@ -70,7 +84,6 @@ Additional usage:
 
     # already instantiated objects can be used (always the same object, 
     # instead of dynamic or instance-base)
-
     class Master(Master):
         sub = Sub()
 
@@ -82,3 +95,10 @@ Additional usage:
 
         method3 = delegated.method(sub, 'method3')
         attr1 = delegated.attribute(sub, 'attr1')
+
+    # nested methods/attrs can be specified
+    delegate.method('sub.sub2.sub3', 'method_name')
+
+    # basic functions can be called to acquire deeper objects
+    delegate.method('sub.sub2.retriever()', 'method_name')
+    delegate.method('sub.retriever().sub2', 'method_name')

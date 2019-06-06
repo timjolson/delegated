@@ -429,3 +429,100 @@ def test_attrs_here_instance():
     check_attr1(Master())
     check_attr2(Master())
 
+
+def test_nested_attr():
+    class nested_call_helper(Subordinate):
+        call_sub = Subordinate()
+        call_sub.attr1 = 'call sub attr1'
+        def call_test(self):
+            return self.call_sub
+
+    class deep_nested_helper(Subordinate):
+        deep_call_sub = nested_call_helper()
+        def call_test(self):
+            return self.deep_call_sub
+
+    class Master():
+        def __init__(self):
+            self.sub = Subordinate()
+            self.sub.sub2 = nested_call_helper()
+            self.sub.sub2.sub3 = deep_nested_helper()
+            self.sub.sub2.sub3.sub4 = Subordinate()
+        delegated.attribute('sub.sub2.sub3', 'attr1', '')
+        call_test = delegated.attribute('sub.sub2.call_test()', 'attr1')
+        deep_call_test = delegated.attribute('sub.sub2.sub3.call_test().call_sub', 'attr1')
+        attr2 = delegated.attribute('sub.sub2.sub3.sub4', 'attr2')
+        attr3, attr4 = delegated.attributes('sub.sub2', ['attr3', 'attr1'])
+
+    m = Master()
+
+    assert m.attr1 == m.sub.sub2.sub3.attr1
+    m.attr1 = 'test'
+    assert m.attr1 == 'test'
+    assert m.attr1 == m.sub.sub2.sub3.attr1
+
+    assert m.attr2 == m.sub.sub2.sub3.sub4.attr2
+    m.attr2 = 'test'
+    assert m.attr2 == 'test'
+    assert m.attr2 == m.sub.sub2.sub3.sub4.attr2
+
+    assert m.attr3 == m.sub.sub2.attr3
+    m.attr3 = 'test'
+    assert m.attr3 == 'test'
+    assert m.attr3 == m.sub.sub2.attr3
+
+    assert m.attr4 == m.sub.sub2.attr1
+    m.attr4 = 'test'
+    assert m.attr4 == 'test'
+    assert m.attr4 == m.sub.sub2.attr1
+
+    assert m.call_test == m.sub.sub2.call_test().attr1
+    m.call_test = 'test'
+    assert m.call_test == 'test'
+    assert m.call_test == m.sub.sub2.call_test().attr1
+
+    assert m.call_test == m.sub.sub2.sub3.call_test().call_sub.attr1
+    m.call_test = 'test'
+    assert m.call_test == 'test'
+    assert m.call_test == m.sub.sub2.sub3.call_test().call_sub.attr1
+
+
+def test_nested_method():
+    class nested_call_helper(Subordinate):
+        call_sub = Subordinate()
+        def call_test(self):
+            return self.call_sub
+
+    class deep_nested_helper(Subordinate):
+        deep_call_sub = nested_call_helper()
+        def call_test(self):
+            return self.deep_call_sub
+
+    class Master():
+        def __init__(self):
+            self.sub = Subordinate()
+            self.sub.sub2 = nested_call_helper()
+            self.sub.sub2.sub3 = deep_nested_helper()
+            self.sub.sub2.sub3.sub4 = Subordinate()
+        delegated.method('sub.sub2.sub3.sub4', 'method1', '')
+        call_test_method = delegated.method('sub.sub2.call_test()', 'method1')
+        deep_call_test_method = delegated.method('sub.sub2.sub3.call_test().call_sub', 'method1')
+
+        @delegated('sub.sub2')
+        def method2(self): pass
+
+        @delegated('sub.sub2.sub3', 'method1')
+        def sub3_method1(self): pass
+
+        method4 = delegated.method('sub.sub2', 'method2')
+        method5, method6 = delegated.methods('sub.sub2.sub3', ['method3', 'method1'])
+
+    m = Master()
+    assert m.method1 == m.sub.sub2.sub3.sub4.method1
+    assert m.method2 == m.sub.sub2.method2
+    assert m.sub3_method1 == m.sub.sub2.sub3.method1
+    assert m.method4 == m.sub.sub2.method2
+    assert m.method5 == m.sub.sub2.sub3.method3
+    assert m.method6 == m.sub.sub2.sub3.method1
+    assert m.call_test_method == m.sub.sub2.call_test().method1
+    assert m.deep_call_test_method == m.sub.sub2.sub3.call_test().call_sub.method1

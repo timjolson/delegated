@@ -14,74 +14,65 @@ class attr_proxy(property):
         else:
             supervisorsetter = lambda *a: None
 
-        def deller(master_instance):
-            delattr(master_instance, attr_name)
+        def deller(supervisor_instance):
+            delattr(supervisor_instance, attr_name)
+
+        self.name = attr_name
+        self.worker = worker.split('.') if isinstance(worker, str) else worker
 
         if isinstance(worker, str):
             self.target = '.'.join([worker, attr_name])
-            getter, setter = self.str_getter_setter(worker, attr_name)
-
+            getter = self.str_getter(self.worker, attr_name)
+            setter = self.str_setter(self.worker, attr_name)
         else:
             self.target = '.'.join([type(worker).__qualname__, attr_name])
-            getter, setter = self.obj_getter_setter(worker, attr_name)
+            getter, setter = self.obj_getter_setter(self.worker, attr_name)
 
         property.__init__(self, getter, setter, deller)
 
-        self.name = attr_name
-        self.worker = worker
         supervisorsetter(attr_name, self)
 
     def obj_getter_setter(self, worker, attr_name):
-        def getter(master_instance):
-            if isinstance(worker, dict): res = worker.get(attr_name)
-            else: res = getattr(worker, attr_name)
+        def getter(supervisor_instance):
+            res = getattr(worker, attr_name)
             return res
 
-        def setter(master_instance, value):
-            if isinstance(worker, dict): worker.update({attr_name: value})
-            else: setattr(worker, attr_name, value)
+        def setter(supervisor_instance, value):
+            setattr(worker, attr_name, value)
         return getter, setter
 
-    def str_getter_setter(self, worker, attr_name):
-        def getter(master_instance):
-            sub = getattr(master_instance, worker)
-            if isinstance(sub, dict): res = sub.get(attr_name)
-            else: res = getattr(sub, attr_name)
+    def str_getter(self, worker, attr_name):
+        def getter(supervisor_instance):
+            sub = getattr(supervisor_instance, worker[0])
+            for w in worker[1:]:
+                if w.endswith('()'):
+                    sub = getattr(sub, w[:-2])()
+                else:
+                    sub = getattr(sub, w)
+            res = getattr(sub, attr_name)
             return res
+        return getter
 
-        def setter(master_instance, value):
-            sub = getattr(master_instance, worker)
-            if isinstance(sub, dict): sub.update({attr_name: value})
-            else: setattr(sub, attr_name, value)
-        return getter, setter
+    def str_setter(self, worker, attr_name):
+        def setter(supervisor_instance, value):
+            sub = getattr(supervisor_instance, worker[0])
+            for w in worker[1:]:
+                if w.endswith('()'):
+                    sub = getattr(sub, w[:-2])()
+                else:
+                    sub = getattr(sub, w)
+            setattr(sub, attr_name, value)
+        return setter
 
     def __repr__(self):
         return f"{type(self).__qualname__}({repr(self.worker)}, {self.name})"
 
 
 class method_proxy(attr_proxy):
-    def obj_getter_setter(self, worker, attr_name):
-        def getter(master_instance):
-            if isinstance(worker, dict): res = worker.get(attr_name)
-            else: res = getattr(worker, attr_name)
-            return res
-
-        def setter(master_instance, value):
-            setattr(master_instance, attr_name, value)
-
-        return getter, setter
-
-    def str_getter_setter(self, worker, attr_name):
-        def getter(master_instance):
-            sub = getattr(master_instance, worker)
-            if isinstance(sub, dict): res = sub.get(attr_name)
-            else: res = getattr(sub, attr_name)
-            return res
-
-        def setter(master_instance, value):
-            setattr(master_instance, attr_name, value)
-
-        return getter, setter
+    def str_setter(self, worker, attr_name):
+        def setter(supervisor_instance, value):
+            setattr(supervisor_instance, attr_name, value)
+        return setter
 
 
 class delegated():
