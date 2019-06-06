@@ -1,1 +1,1 @@
-from .delegated import delegated, method_proxy, attr_proxy
+from .delegated import delegated, attr_proxy, method_proxy
