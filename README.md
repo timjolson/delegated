@@ -1,12 +1,32 @@
 # delegated
 python3 decorator, method proxy, attribute proxy to delegate tasks to a sub-object
 
-    from delegated import delegated, attr_proxy
-
-    attr_proxy  # property object, allows access to another object's attribute/method
+    from delegated import delegated
 
     delegated  # class, use as method decorator and as namespace for:
                # attribute(), attributes(), method(), methods()
+
+    # methods
+    delegated.attribute   # returns attr_proxy
+    delegated.method      # returns method_proxy
+    delegated.attributes  # returns [attr_proxy, ...]
+    delegated.methods     # returns [method_proxy, ...]
+    
+    # for .methods and .attributes, the target names can be a 
+    # list of strings:
+    # ['name1', 'name2', ...]
+    # OR
+    # a single comma/space separated string:
+    # 'name1 name2 name3'
+    # 'name1, name2, name3'
+
+    # when provided a 3rd parameter of '' (empty string), the above
+    # methods will attach the delegated item to the relevant context/containing class
+    # e.g.
+    class Master():
+        sub = Subordinate()
+        delegated.attribute('sub', 'attr_of_sub_name', '')
+
 
 Decorator usage
 
@@ -23,19 +43,6 @@ Decorator usage
 
         ...
 
-    # methods
-    delegated.attribute   # returns attr_proxy
-    delegated.attributes  # returns [attr_proxy, ...]
-    delegated.method      # returns method_proxy
-    delegated.methods     # returns [method_proxy, ...]
-    
-    # when provided a 3rd parameter of '' (empty string), the above
-    # methods will attach the delegated item to the containing class
-    # e.g.
-    class Master():
-        sub = Subordinate()
-        delegated.attribute('sub', 'attr_of_sub_name', '')
-    
 
 Main usage case:
 
@@ -64,7 +71,7 @@ Main usage case:
         delegated.methods('sub', 'method1, method2, ..., method99', '')
 
     class ExplicitMaster(Master):
-        '''Explicit delegation allows for renaming and code completion for methods and attrs.'''
+        """Explicit delegation allows for renaming and code completion for methods and attrs."""
         attr1, ..., attr99 = delegated.attributes('sub', 'attr1, ..., attr99')
         method1, ..., method99 = delegated.methods('sub', 'method1, ..., method99')
 
@@ -82,7 +89,7 @@ Main usage case:
 
 Additional usage:
 
-    # already instantiated objects can be used (always the same object, 
+    # Already instantiated objects can be used (always the same object, 
     # instead of dynamic or instance-base)
     class Master(Master):
         sub = Sub()
@@ -99,6 +106,6 @@ Additional usage:
     # nested methods/attrs can be specified
     delegate.method('sub.sub2.sub3', 'method_name')
 
-    # basic functions can be called to acquire deeper objects
+    # basic functions (no args) can be called to acquire deeper objects
     delegate.method('sub.sub2.retriever()', 'method_name')
     delegate.method('sub.retriever().sub2', 'method_name')
