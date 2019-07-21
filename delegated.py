@@ -112,7 +112,12 @@ class delegated():
             supervisor = _stack()[1].frame.f_locals
 
         proxies = []
-        for attr_name in delegated.split(attrs):
+        attrs = delegated.split(attrs)
+
+        if len(attrs) == 1:
+            return delegated.attribute(worker, attrs[0], supervisor)
+
+        for attr_name in attrs:
             attr_proxy = delegated.attribute(worker, attr_name, supervisor)
             proxies.append(attr_proxy)
         return proxies
@@ -126,7 +131,12 @@ class delegated():
             supervisor = _stack()[1].frame.f_locals
 
         proxies = []
-        for attr_name in delegated.split(attrs):
+        attrs = delegated.split(attrs)
+
+        if len(attrs) == 1:
+            return delegated.method(worker, attrs[0], supervisor)
+
+        for attr_name in attrs:
             method_proxy = delegated.method(worker, attr_name, supervisor)
             proxies.append(method_proxy)
         return proxies
