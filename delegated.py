@@ -85,6 +85,15 @@ class method_proxy(attr_proxy):
             setattr(supervisor_instance, attr_name, value)
         return setter
 
+    def obj_getter_setter(self, worker, attr_name):
+        def getter(supervisor_instance):
+            res = getattr(worker, attr_name)
+            return res
+
+        def setter(supervisor_instance, value):
+            setattr(supervisor_instance, attr_name, value)
+        return getter, setter
+
 
 class delegated():
     def __init__(self, worker, attr_name=None):
