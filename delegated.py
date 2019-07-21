@@ -49,14 +49,14 @@ class attr_proxy(property):
         def getter(supervisor_instance):
             trace = [type(supervisor_instance).__name__]
             try:
-                sub = getattr(supervisor_instance, worker[0])
                 trace.append(worker[0])
+                sub = getattr(supervisor_instance, worker[0])
                 for w in worker[1:]:
+                    trace.append(w)
                     if w.endswith('()'):
                         sub = getattr(sub, w[:-2])()
                     else:
                         sub = getattr(sub, w)
-                    trace.append(w)
                 trace.append(attr_name)
                 res = getattr(sub, attr_name)
             except AttributeError:
