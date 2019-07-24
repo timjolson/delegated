@@ -1,10 +1,6 @@
 from inspect import stack as _stack
 
 
-class DelegatedProxyError(Exception):
-    pass
-
-
 class attr_proxy(property):
     def __init__(self, worker, attr_name, supervisor=None):
         if supervisor is not None:
@@ -57,10 +53,9 @@ class attr_proxy(property):
                         sub = getattr(sub, w[:-2])()
                     else:
                         sub = getattr(sub, w)
-                trace.append(attr_name)
                 res = getattr(sub, attr_name)
             except AttributeError:
-                raise DelegatedProxyError(f"AttributeError: '{'.'.join(map(str, trace))}' not accessible.")
+                raise AttributeError(f"'{'.'.join(map(str, trace))}' object has no attribute '{attr_name}'")
             return res
         return getter
 
