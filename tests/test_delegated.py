@@ -1,5 +1,5 @@
 import pytest
-from .delegated import attr_proxy, method_proxy, delegated
+from delegated import delegated
 
 
 class Subordinate():
@@ -72,70 +72,122 @@ def check_attr3(m):
 
 
 def check_attrs(m):
+    assert isinstance(m.attr1, str)
+    assert isinstance(m.attr2, str)
+    assert isinstance(m.attr3, str)
     check_attr1(m)
     check_attr2(m)
     check_attr3(m)
 
 
-def test_attr_proxy_class():
+def test_attributes_str_str():
     class Master():
         sub = Subordinate()
-        attr1 = attr_proxy('sub', 'attr1')
-        attr2 = attr_proxy('sub', 'attr2')
-        attr3 = attr_proxy('sub', 'attr1')
+        attr1 = delegated.tasks('sub', 'attr1')
+        attr2 = delegated.tasks('sub', 'attr2')
+        attr3 = delegated.tasks('sub', 'attr1')
 
     check_attrs(Master())
 
     class Master():
         sub = Subordinate()
-        attr1 = attr_proxy(sub, 'attr1')
-        attr2 = attr_proxy(sub, 'attr2')
-        attr3 = attr_proxy(sub, 'attr1')
+        attr1, attr2 = delegated.tasks('sub', 'attr1 attr2')
+        attr3 = delegated.tasks('sub', 'attr1')
 
     check_attrs(Master())
 
 
-def test_attr_proxy_instance():
+def test_attributes_instance_str():
+    class Master():
+        sub = Subordinate()
+        attr1 = delegated.tasks(sub, 'attr1')
+        attr2 = delegated.tasks(sub, 'attr2')
+        attr3 = delegated.tasks(sub, 'attr1')
+
+    check_attrs(Master())
+
+    class Master():
+        sub = Subordinate()
+        attr1, attr2 = delegated.tasks(sub, 'attr1 attr2')
+        attr3 = delegated.tasks(sub, 'attr1')
+
+    check_attrs(Master())
+
+
+def test_attributes_str_str_instanceattr():
     class Master():
         def __init__(self):
             self.sub = Subordinate()
-        attr1 = attr_proxy('sub', 'attr1')
-        attr2 = attr_proxy('sub', 'attr2')
-        attr3 = attr_proxy('sub', 'attr1')
+        attr1 = delegated.tasks('sub', 'attr1')
+        attr2 = delegated.tasks('sub', 'attr2')
+        attr3 = delegated.tasks('sub', 'attr1')
+
+    check_attrs(Master())
+
+    class Master():
+        def __init__(self):
+            self.sub = Subordinate()
+        attr1, attr2 = delegated.tasks('sub', 'attr1 attr2')
+        attr3 = delegated.tasks('sub', 'attr1')
 
     check_attrs(Master())
 
 
-def test_method_proxy_class():
+def test_methods_str_str():
+    # TODO: remove duplicates now that there's only 1 type of proxy
     class Master():
         sub = Subordinate()
-        method1 = method_proxy('sub', 'method1')
-        method2 = method_proxy('sub', 'method2')
-        method3 = method_proxy('sub', 'method1')
+        method1 = delegated.tasks('sub', 'method1')
+        method2 = delegated.tasks('sub', 'method2')
+        method3 = delegated.tasks('sub', 'method1')
 
     check_methods(Master())
 
     class Master():
         sub = Subordinate()
-        method1 = method_proxy(sub, 'method1')
-        method2 = method_proxy(sub, 'method2')
-        method3 = method_proxy(sub, 'method1')
+        method1, method2 = delegated.tasks('sub', 'method1 method2')
+        method3 = delegated.tasks('sub', 'method1')
 
     check_methods(Master())
 
 
-def test_method_proxy_instance():
+def test_methods_instance_str():
+    class Master():
+        sub = Subordinate()
+        method1 = delegated.tasks(sub, 'method1')
+        method2 = delegated.tasks(sub, 'method2')
+        method3 = delegated.tasks(sub, 'method1')
+
+    check_methods(Master())
+
+    class Master():
+        sub = Subordinate()
+        method1, method2 = delegated.tasks(sub, ['method1', 'method2'])
+        method3 = delegated.tasks(sub, 'method1')
+
+    check_methods(Master())
+
+
+def test_methods_str_str_instanceattr():
     class Master():
         def __init__(self):
             self.sub = Subordinate()
-        method1 = method_proxy('sub', 'method1')
-        method2 = method_proxy('sub', 'method2')
-        method3 = method_proxy('sub', 'method1')
+        method1 = delegated.tasks('sub', 'method1')
+        method2 = delegated.tasks('sub', 'method2')
+        method3 = delegated.tasks('sub', 'method1')
+
+    check_methods(Master())
+
+    class Master():
+        def __init__(self):
+            self.sub = Subordinate()
+        method1, method2 = delegated.tasks('sub', 'method1 method2')
+        method3 = delegated.tasks('sub', 'method1')
 
     check_methods(Master())
 
 
-def test_decorator_class():
+def test_decorator_str_str():
     class Master():
         sub = Subordinate()
 
@@ -148,6 +200,8 @@ def test_decorator_class():
 
     check_methods(Master())
 
+
+def test_decorator_instance_str():
     class Master():
         sub = Subordinate()
 
@@ -161,7 +215,7 @@ def test_decorator_class():
     check_methods(Master())
 
 
-def test_decorator_instance():
+def test_decorator_str_str_instanceattr():
     class Master():
         def __init__(self):
             self.sub = Subordinate()
@@ -176,62 +230,113 @@ def test_decorator_instance():
     check_methods(Master())
 
 
-def test_method_class():
+def test_attrs_embed_str_str():
     class Master():
         sub = Subordinate()
-        method1 = delegated.method('sub', 'method1')
-        method2 = delegated.method('sub', 'method2')
-        method3 = delegated.method('sub', 'method1')
+        delegated.here('sub', 'attr1')
+        delegated.here('sub', 'attr2')
 
-    check_methods(Master())
+    check_attr1(Master())
+    check_attr2(Master())
 
     class Master():
         sub = Subordinate()
-        method1 = delegated.method(sub, 'method1')
-        method2 = delegated.method(sub, 'method2')
-        method3 = delegated.method(sub, 'method1')
+        delegated.here('sub', 'attr1, attr2')
 
-    check_methods(Master())
+    check_attr1(Master())
+    check_attr2(Master())
 
 
-def test_method_instance():
+def test_attrs_embed_instance_str():
+    class Master():
+        sub = Subordinate()
+        delegated.here(sub, 'attr1')
+        delegated.here(sub, 'attr2')
+
+    check_attr1(Master())
+    check_attr2(Master())
+
+    class Master():
+        sub = Subordinate()
+        delegated.here(sub, 'attr1, attr2')
+
+    check_attr1(Master())
+    check_attr2(Master())
+
+
+def test_attrs_embed_str_str_instanceattr():
     class Master():
         def __init__(self):
             self.sub = Subordinate()
-        method1 = delegated.method('sub', 'method1')
-        method2 = delegated.method('sub', 'method2')
-        method3 = delegated.method('sub', 'method1')
 
-    check_methods(Master())
+        delegated.here('sub', 'attr1')
+        delegated.here('sub', 'attr2')
 
+    check_attr1(Master())
+    check_attr2(Master())
 
-def test_attr_class():
-    class Master():
-        sub = Subordinate()
-        attr1 = delegated.attribute('sub', 'attr1')
-        attr2 = delegated.attribute('sub', 'attr2')
-        attr3 = delegated.attribute('sub', 'attr1')
-
-    check_attrs(Master())
-
-    class Master():
-        sub = Subordinate()
-        attr1 = delegated.attribute(sub, 'attr1')
-        attr2 = delegated.attribute(sub, 'attr2')
-        attr3 = delegated.attribute(sub, 'attr1')
-
-    check_attrs(Master())
-
-
-def test_attr_instance():
     class Master():
         def __init__(self):
             self.sub = Subordinate()
-        attr1 = delegated.attribute('sub', 'attr1')
-        attr2 = delegated.attribute('sub', 'attr2')
-        attr3 = delegated.attribute('sub', 'attr1')
 
-    check_attrs(Master())
+        delegated.here('sub', 'attr1, attr2')
+
+    check_attr1(Master())
+    check_attr2(Master())
+
+
+def test_methods_embed_str_str():
+    class Master():
+        sub = Subordinate()
+        delegated.here('sub', 'method1')
+        delegated.here('sub', 'method2')
+
+    check_method1(Master())
+    check_method2(Master())
+
+    class Master():
+        sub = Subordinate()
+        delegated.here('sub', 'method1, method2')
+
+    check_method1(Master())
+    check_method2(Master())
+
+
+def test_methods_embed_instance_str():
+    class Master():
+        sub = Subordinate()
+        delegated.here(sub, 'method1')
+        delegated.here(sub, 'method2')
+
+    check_method1(Master())
+    check_method2(Master())
+
+    class Master():
+        sub = Subordinate()
+        delegated.here(sub, 'method1, method2')
+
+    check_method1(Master())
+    check_method2(Master())
+
+
+def test_methods_embed_str_str_instanceattr():
+    class Master():
+        def __init__(self):
+            self.sub = Subordinate()
+
+        delegated.here('sub', 'method1')
+        delegated.here('sub', 'method2')
+
+    check_method1(Master())
+    check_method2(Master())
+
+    class Master():
+        def __init__(self):
+            self.sub = Subordinate()
+        delegated.here('sub', 'method1, method2')
+
+    check_method1(Master())
+    check_method2(Master())
 
 
 def test_basics_multiple_instances():
@@ -239,12 +344,12 @@ def test_basics_multiple_instances():
         def __init__(self):
             self.sub = Subordinate()
 
-        attr1 = delegated.attribute('sub', 'attr1')
-        attr2 = delegated.attribute('sub', 'attr2')
-        attr3 = delegated.attribute('sub', 'attr1')
+        attr1 = delegated.tasks('sub', 'attr1')
+        attr2 = delegated.tasks('sub', 'attr2')
+        attr3 = delegated.tasks('sub', 'attr1')
 
         shared = Subordinate()
-        shared_attr = delegated.attribute('shared', 'attr1')
+        shared_attr = delegated.tasks('shared', 'attr1')
 
     m1, m2 = Master(), Master()
 
@@ -267,170 +372,7 @@ def test_basics_multiple_instances():
     assert m1.shared_attr == m2.shared_attr
 
 
-def test_methods_class():
-    class Master():
-        sub = Subordinate()
-        method1, method2 = delegated.methods('sub', 'method1 method2')
-        method3 = delegated.method('sub', 'method1')
-
-    check_methods(Master())
-
-    class Master():
-        sub = Subordinate()
-        method1, method2 = delegated.methods(sub, ['method1', 'method2'])
-        method3 = delegated.method(sub, 'method1')
-
-    check_methods(Master())
-
-
-def test_methods_instance():
-    class Master():
-        def __init__(self):
-            self.sub = Subordinate()
-        method1, method2 = delegated.methods('sub', 'method1 method2')
-        method3 = delegated.method('sub', 'method1')
-
-    check_methods(Master())
-
-
-def test_attrs_class():
-    class Master():
-        sub = Subordinate()
-        attr1, attr2 = delegated.attributes('sub', 'attr1 attr2')
-        attr3 = delegated.attribute('sub', 'attr1')
-
-    check_attrs(Master())
-
-    class Master():
-        sub = Subordinate()
-        attr1, attr2 = delegated.attributes(sub, 'attr1 attr2')
-        attr3 = delegated.attribute(sub, 'attr1')
-
-    check_attrs(Master())
-
-
-def test_attrs_instance():
-    class Master():
-        def __init__(self):
-            self.sub = Subordinate()
-        attr1, attr2 = delegated.attributes('sub', 'attr1 attr2')
-        attr3 = delegated.attribute('sub', 'attr1')
-
-    check_attrs(Master())
-
-
-def test_method_here_class():
-    class Master():
-        sub = Subordinate()
-        delegated.method('sub', 'method1', '')
-        delegated.method('sub', 'method2', '')
-
-    check_method1(Master())
-    check_method2(Master())
-
-    class Master():
-        sub = Subordinate()
-        delegated.method(sub, 'method1', '')
-        delegated.method(sub, 'method2', '')
-
-    check_method1(Master())
-    check_method2(Master())
-
-
-def test_method_here_instance():
-    class Master():
-        def __init__(self):
-            self.sub = Subordinate()
-
-        delegated.method('sub', 'method1', '')
-        delegated.method('sub', 'method2', '')
-
-    check_method1(Master())
-    check_method2(Master())
-
-
-def test_methods_here_class():
-    class Master():
-        sub = Subordinate()
-        delegated.methods('sub', 'method1, method2', '')
-
-    check_method1(Master())
-    check_method2(Master())
-
-    class Master():
-        sub = Subordinate()
-        delegated.methods(sub, 'method1, method2', '')
-
-    check_method1(Master())
-    check_method2(Master())
-
-
-def test_methods_here_instance():
-    class Master():
-        def __init__(self):
-            self.sub = Subordinate()
-        delegated.methods('sub', 'method1, method2', '')
-
-    check_method1(Master())
-    check_method2(Master())
-
-
-def test_attr_here_class():
-    class Master():
-        sub = Subordinate()
-        delegated.attribute('sub', 'attr1', '')
-        delegated.attribute('sub', 'attr2', '')
-
-    check_attr1(Master())
-    check_attr2(Master())
-
-    class Master():
-        sub = Subordinate()
-        delegated.attribute(sub, 'attr1', '')
-        delegated.attribute(sub, 'attr2', '')
-
-    check_attr1(Master())
-    check_attr2(Master())
-
-
-def test_attr_here_instance():
-    class Master():
-        def __init__(self):
-            self.sub = Subordinate()
-        delegated.attribute('sub', 'attr1', '')
-        delegated.attribute('sub', 'attr2', '')
-
-    check_attr1(Master())
-    check_attr2(Master())
-
-
-def test_attrs_here_class():
-    class Master():
-        sub = Subordinate()
-        delegated.attributes('sub', 'attr1, attr2', '')
-
-    check_attr1(Master())
-    check_attr2(Master())
-
-    class Master():
-        sub = Subordinate()
-        delegated.attributes(sub, 'attr1, attr2', '')
-
-    check_attr1(Master())
-    check_attr2(Master())
-
-
-def test_attrs_here_instance():
-    class Master():
-        def __init__(self):
-            self.sub = Subordinate()
-        delegated.attributes('sub', 'attr1, attr2', '')
-
-    check_attr1(Master())
-    check_attr2(Master())
-
-
-def test_nested_attr():
+def test_nested_attributes():
     class nested_call_helper(Subordinate):
         call_sub = Subordinate()
         call_sub.attr1 = 'call sub attr1'
@@ -448,11 +390,11 @@ def test_nested_attr():
             self.sub.sub2 = nested_call_helper()
             self.sub.sub2.sub3 = deep_nested_helper()
             self.sub.sub2.sub3.sub4 = Subordinate()
-        delegated.attribute('sub.sub2.sub3', 'attr1', '')
-        call_test = delegated.attribute('sub.sub2.call_test()', 'attr1')
-        deep_call_test = delegated.attribute('sub.sub2.sub3.call_test().call_sub', 'attr1')
-        attr2 = delegated.attribute('sub.sub2.sub3.sub4', 'attr2')
-        attr3, attr4 = delegated.attributes('sub.sub2', ['attr3', 'attr1'])
+        delegated.here('sub.sub2.sub3', 'attr1')
+        call_test = delegated.tasks('sub.sub2.call_test()', 'attr1')
+        deep_call_test = delegated.tasks('sub.sub2.sub3.call_test().call_sub', 'attr1')
+        attr2 = delegated.tasks('sub.sub2.sub3.sub4', 'attr2')
+        attr3, attr4 = delegated.tasks('sub.sub2', ['attr3', 'attr1'])
 
     m = Master()
 
@@ -487,7 +429,7 @@ def test_nested_attr():
     assert m.call_test == m.sub.sub2.sub3.call_test().call_sub.attr1
 
 
-def test_nested_method():
+def test_nested_methods():
     class nested_call_helper(Subordinate):
         call_sub = Subordinate()
         def call_test(self):
@@ -504,9 +446,9 @@ def test_nested_method():
             self.sub.sub2 = nested_call_helper()
             self.sub.sub2.sub3 = deep_nested_helper()
             self.sub.sub2.sub3.sub4 = Subordinate()
-        delegated.method('sub.sub2.sub3.sub4', 'method1', '')
-        call_test_method = delegated.method('sub.sub2.call_test()', 'method1')
-        deep_call_test_method = delegated.method('sub.sub2.sub3.call_test().call_sub', 'method1')
+        delegated.here('sub.sub2.sub3.sub4', 'method1')
+        call_test_method = delegated.tasks('sub.sub2.call_test()', 'method1')
+        deep_call_test_method = delegated.tasks('sub.sub2.sub3.call_test().call_sub', 'method1')
 
         @delegated('sub.sub2')
         def method2(self): pass
@@ -514,15 +456,26 @@ def test_nested_method():
         @delegated('sub.sub2.sub3', 'method1')
         def sub3_method1(self): pass
 
-        method4 = delegated.method('sub.sub2', 'method2')
-        method5, method6 = delegated.methods('sub.sub2.sub3', ['method3', 'method1'])
+        method4 = delegated.tasks('sub.sub2', 'method2')
+        method5, method6 = delegated.tasks('sub.sub2.sub3', ['method3', 'method1'])
 
     m = Master()
     assert m.method1 == m.sub.sub2.sub3.sub4.method1
+    assert m.method1() == m.sub.sub2.sub3.sub4.method1()
     assert m.method2 == m.sub.sub2.method2
+    assert m.method2() == m.sub.sub2.method2()
     assert m.sub3_method1 == m.sub.sub2.sub3.method1
+    assert m.sub3_method1() == m.sub.sub2.sub3.method1()
     assert m.method4 == m.sub.sub2.method2
+    assert m.method4() == m.sub.sub2.method2()
     assert m.method5 == m.sub.sub2.sub3.method3
+    assert m.method5() == m.sub.sub2.sub3.method3()
     assert m.method6 == m.sub.sub2.sub3.method1
+    assert m.method6() == m.sub.sub2.sub3.method1()
     assert m.call_test_method == m.sub.sub2.call_test().method1
+    assert m.call_test_method() == m.sub.sub2.call_test().method1()
     assert m.deep_call_test_method == m.sub.sub2.sub3.call_test().call_sub.method1
+    assert m.deep_call_test_method() == m.sub.sub2.sub3.call_test().call_sub.method1()
+
+
+#TODO: build tests for Dict
