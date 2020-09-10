@@ -1,6 +1,7 @@
 from inspect import stack as _stack
 # TODO: test if we can use entire module as decorator (use __init__.py)
 
+
 class delegated(object):
     """Class to delegate tasks to a subordinate object.
 
@@ -108,7 +109,7 @@ class delegated(object):
         :return: a proxy (if one is requested), or list of proxies (if multiple)
         """
         proxies = []
-        attrs = delegated.split(attrs)
+        attrs = delegated.__split(attrs)
 
         if len(attrs) == 1:
             return delegated.__proxy(worker, attrs[0], supervisor)
@@ -129,7 +130,7 @@ class delegated(object):
         supervisor = _stack()[1].frame.f_locals
 
         proxies = []
-        attrs = delegated.split(attrs)
+        attrs = delegated.__split(attrs)
 
         if len(attrs) == 1:
             return delegated.__proxy(worker, attrs[0], supervisor)
@@ -140,7 +141,7 @@ class delegated(object):
         return proxies
 
     @staticmethod
-    def split(attrs):
+    def __split(attrs):
         # Split task strings by comma or space
         if isinstance(attrs, str):
             attrs = attrs.replace(',', ' ').split()
