@@ -1,55 +1,31 @@
 # delegated
-python3 decorator, method proxy, attribute proxy to delegate tasks to a sub-object
 
-    from delegated import delegated
+## Single python3 class to delegate tasks to a subordinate object.
 
-    delegated  # class, use as method decorator and as namespace for:
-               # attribute(), attributes(), method(), methods()
+Class to delegate tasks to a subordinate object.
 
-    # methods
-    delegated.attribute   # returns attr_proxy
-    delegated.method      # returns method_proxy
-    delegated.attributes  # returns [attr_proxy, ...]
-    delegated.methods     # returns [method_proxy, ...]
-    
-    # for .methods and .attributes, the target names can be a 
-    # list of strings:
-    # ['name1', 'name2', ...]
-    # OR
-    # a single comma/space separated string:
-    # 'name1 name2 name3'
-    # 'name1, name2, name3'
+Subordinates can be an existing object, or the name (str) of an instance//class attribute
+to be dynamically retrieved.
 
-    # when provided a 3rd parameter of '' (empty string), the above
-    # methods will attach the delegated item to the relevant context/containing class
-    # e.g.
-    class Master():
-        sub = Subordinate()
-        delegated.attribute('sub', 'attr_of_sub_name', '')
+Supervisor can be a class instance, or a dict (keys are used as attribute names).
 
+---
 
-Decorator usage
+#### Create proxies to methods or attributes via decorator, assignment, or automatic class embedding. 
 
-    # Note: the defined methods' signature (parameters, etc.) is irrelevant."""
-    
-    class Master():
-        ...
+    class delegated(object):
+        def tasks       # Delegates attribute(s) and returns their proxies.
+        def here        # Delegates attribute(s) and embeds into the containing class.
+        
+        # For .tasks and .here, the subordinate attribute names can be: 
+        # a sequence of strings:  ['name1', 'name2', ...]
+        # OR 
+        # a single comma//space separated string: 'name1, name2, name3' // 'name1 name2 name3'
 
-        @delegated('name_of_sub_component')
-        def same_name_as_sub_component_method(self): pass
-
-        @delegated('name_of_sub_component', 'name_of_sub_component_method')
-        def whatever_method_name(self): pass
-
-        ...
-
-
-Main usage case:
-
-    from delegated import delegated
+#### Base classes for the following examples:
     
     class Sub():
-        '''Subordinate class'''
+        '''Subordinate class (helper for following examples).'''
         attr1 = 1    
         ...   
         attr99 = 99
@@ -59,53 +35,61 @@ Main usage case:
         def method99(self, *args, **kwargs): pass
     
     class Master():
-        '''Class or instance attributes and methods are supported'''
-        sub = Sub()
+        '''Base class for following examples.
+        Subordinate objects can be class or instance attributes.'''
+        sub = Sub()  # class attribute
         def __init__(self):
-            self.instance_sub = Sub()
-    
-    class ImplicitMaster(Master):
-        """Implicit delegation is simplest. Note: need '' final parameter
-        to automatically apply the delegation to the class."""
-        delegated.attributes('sub', 'attr1 attr2, ..., attr99', '')
-        delegated.methods('sub', 'method1, method2, ..., method99', '')
+            self.instance_sub = Sub()  # instance attribute
 
+
+#### Delegate via assignment:
     class ExplicitMaster(Master):
-        """Explicit delegation allows for renaming and code completion for methods and attrs."""
-        attr1, ..., attr99 = delegated.attributes('sub', 'attr1, ..., attr99')
-        method1, ..., method99 = delegated.methods('sub', 'method1, ..., method99')
+        '''Explicit delegation allows for renaming and some code completion.'''
+        attr1, ..., attr99 = delegated.tasks(sub, 'attr1, ..., attr99')
+        method1, ..., method99 = delegated.tasks('sub', 'method1, ..., method99')
 
+
+#### Delegate via class embedding:
+    class ImplicitMaster(Master):
+        '''Implicit delegation is simplest.'''
+        delegated.here('sub', 'attr1 attr2 ... attr99')
+        delegated.here(sub, 'method1, method2, ..., method99')
+
+
+#### Delegate via decorator
+    
     class DecoratedMaster(Master):
-        """Decorating allows for renaming and code completion for methods.
-        Note: the defined methods' signature (parameters, etc.) is irrelevant."""
-        # simple
+        '''Decorating allows for renaming and some code completion.
+        Note: the defined methods' signature (parameters, etc.) is irrelevant,
+        but may be useful for reference.'''
+        ...
+        
+        # keep method name, use `sub` object's `method1`
         @delegated('sub')
-        def method1(self):pass
+        def method1(self):
+            pass
+
+        # OR
         
-        # renaming
-        @delegated('sub', 'method69')
-        def best_method(self):pass
-
-
-Additional usage:
-
-    # Already instantiated objects can be used (always the same object, 
-    # instead of dynamic or instance-base)
-    class Master(Master):
-        sub = Sub()
-
+        # rename, use `instance_sub.method1` under name `best_method`
+        @delegated('instance_sub', 'method1')
+        def best_method(self):
+            pass
+        
+        # NOTE: Like assignment or embedding, decorating can also 
+        # accept object subordinates instead of strings
         @delegated(sub)
-        def method1(self): pass
-        
-        @delegated(sub, 'method2')
-        def class_object_method(self): pass
+        def method1(self):
+            pass
+        ...
 
-        method3 = delegated.method(sub, 'method3')
-        attr1 = delegated.attribute(sub, 'attr1')
 
-    # nested methods/attrs can be specified
-    delegate.method('sub.sub2.sub3', 'method_name')
+#### Advanced usage:
 
-    # basic functions (no args) can be called to acquire deeper objects
-    delegate.method('sub.sub2.retriever()', 'method_name')
-    delegate.method('sub.retriever().sub2', 'method_name')
+    # Nested methods/attributes can be specified
+    method = delegate.tasks('sub.sub2.sub3', 'method_name')
+    delegate.here('sub.sub2.sub3', 'method_name')
+
+    # Basic functions (no args) can be called to acquire deeper objects
+    method = delegate.tasks('sub.sub2.retriever()', 'method_name')
+    delegate.here('sub.retriever().sub2', 'method_name')
