@@ -1,8 +1,28 @@
 from inspect import stack as _stack
-# TODO: test if we can use entire module as decorator (use __init__.py)
+import types
+import sys
+# import logging
+# logging.basicConfig(level=logging.DEBUG)
+# logger = logging.getLogger(__name__)
+
+
+def shallow_exception(exception, message=None, off_the_top=0):
+    exp = type(exception)
+    tb = None
+    while True:
+        try:
+            frame = sys._getframe(off_the_top)
+            off_the_top += 1
+        except ValueError as exc:
+            break
+
+        tb = types.TracebackType(tb, frame, frame.f_lasti, frame.f_lineno)
+
+        raise exp(message if message is not None else exception.args).with_traceback(tb)
 
 
 class delegated(object):
+    # logger = logger
     """Class to delegate tasks to a subordinate object.
 
         Subordinates can be an existing object, or the name of an instance//class attribute
@@ -67,19 +87,23 @@ class delegated(object):
 
         def str_getter(self, worker, attr_name):
             def getter(supervisor_instance):
-                trace = [type(supervisor_instance).__name__]
+                trace = [type(supervisor_instance).__name__, worker[0]]
+                remaining = worker.copy() + [attr_name]
                 try:
-                    trace.append(worker[0])
                     sub = getattr(supervisor_instance, worker[0])
+                    del remaining[0]
                     for w in worker[1:]:
-                        trace.append(w)
                         if w.endswith('()'):
                             sub = getattr(sub, w[:-2])()
                         else:
                             sub = getattr(sub, w)
+                        trace.append(w)
+                        del remaining[0]
                     res = getattr(sub, attr_name)
-                except AttributeError:
-                    raise AttributeError(f"'{'.'.join(map(str, trace))}' object has no attribute '{attr_name}'")
+                except AttributeError as err:
+                    msg = f"By `delegated` proxy: '{'.'.join(map(str, trace))}' object has no attribute '{remaining[0]}'"
+                    shallow_exception(err, message=msg, off_the_top=2)
+
                 return res
 
             return getter
