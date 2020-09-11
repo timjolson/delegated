@@ -6,7 +6,7 @@ import sys
 # logger = logging.getLogger(__name__)
 
 
-def shallow_exception(exception, message=None, off_the_top=0):
+def __shallow_exception(exception, message=None, off_the_top=0):
     exp = type(exception)
     tb = None
     while True:
@@ -24,12 +24,43 @@ def shallow_exception(exception, message=None, off_the_top=0):
 class delegated(object):
     # logger = logger
     """Class to delegate tasks to a subordinate object.
+    Create proxies to methods or attributes via decorator, assignment, or automatic class embedding.
 
-        Subordinates can be an existing object, or the name of an instance//class attribute
-        to be dynamically retrieved.
+    Subordinates can be an existing object, or the name of an instance//class attribute
+    to be dynamically retrieved.
 
-        Supervisor can be a class instance, or a dict (keys are used as attribute names).
+    Supervisor can be a class instance, or a dict (keys are used as attribute names).
     """
+    @staticmethod
+    def tasks(worker, attrs, supervisor=None):
+        """Delegates attribute(s) and returns their proxies.
+
+        :param worker: str or object; subordinate(s) to delegate to
+        :param attrs: str or sequence of strings; attributes to delegate
+        :param supervisor: the delegating object or `None`
+        :return: a proxy (if one is requested), or list of proxies (if multiple requested)
+        """
+        proxies = []
+        attrs = delegated.__split(attrs)
+
+        if len(attrs) == 1:
+            return delegated.__proxy(worker, attrs[0], supervisor)
+
+        for attr_name in attrs:
+            attr_proxy = delegated.__proxy(worker, attr_name, supervisor)
+            proxies.append(attr_proxy)
+        return proxies
+
+    @staticmethod
+    def here(worker, attrs):
+        """Delegates attribute(s) and embeds into the containing class.
+
+        :param worker: str or object; subordinate(s) to delegate to
+        :param attrs: str or sequence of strings; attributes to delegate
+        :return: a proxy (if one is requested), or list of proxies (if multiple requested)
+        """
+        supervisor = _stack()[1].frame.f_locals
+        return delegated.tasks(worker, attrs, supervisor=supervisor)
 
     def __init__(self, worker, attr_name=None):
         # Runs when decorating
@@ -101,8 +132,9 @@ class delegated(object):
                         del remaining[0]
                     res = getattr(sub, attr_name)
                 except AttributeError as err:
-                    msg = f"By `delegated` proxy: '{'.'.join(map(str, trace))}' object has no attribute '{remaining[0]}'"
-                    shallow_exception(err, message=msg, off_the_top=2)
+                    msg = f"By `delegated` proxy: '{'.'.join(map(str, trace))}' " \
+                          f"object has no attribute '{remaining[0]}'"
+                    delegated.__shallow_exception(err, message=msg, off_the_top=2)
 
                 return res
 
@@ -122,47 +154,6 @@ class delegated(object):
 
         def __repr__(self):
             return f"{type(self).__qualname__}({repr(self.worker)}, {repr(self.attr_name)})"
-
-    @staticmethod
-    def tasks(worker, attrs, supervisor=None):
-        """Delegates attribute(s) and returns their proxies.
-
-        :param worker: str or object; subordinate(s) to delegate to
-        :param attrs: str or sequence of strings; attributes to delegate
-        :param supervisor: the delegating object or `None`
-        :return: a proxy (if one is requested), or list of proxies (if multiple)
-        """
-        proxies = []
-        attrs = delegated.__split(attrs)
-
-        if len(attrs) == 1:
-            return delegated.__proxy(worker, attrs[0], supervisor)
-
-        for attr_name in attrs:
-            attr_proxy = delegated.__proxy(worker, attr_name, supervisor)
-            proxies.append(attr_proxy)
-        return proxies
-
-    @staticmethod
-    def here(worker, attrs):
-        """Delegates attribute(s) and embeds into the containing class.
-
-        :param worker: str or object; subordinate(s) to delegate to
-        :param attrs: str or sequence of strings; attributes to delegate
-        :return: a proxy (if one is requested), or list of proxies (if multiple)
-        """
-        supervisor = _stack()[1].frame.f_locals
-
-        proxies = []
-        attrs = delegated.__split(attrs)
-
-        if len(attrs) == 1:
-            return delegated.__proxy(worker, attrs[0], supervisor)
-
-        for attr_name in attrs:
-            attr_proxy = delegated.__proxy(worker, attr_name, supervisor)
-            proxies.append(attr_proxy)
-        return proxies
 
     @staticmethod
     def __split(attrs):

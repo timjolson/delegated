@@ -1,11 +1,9 @@
 # delegated
 
-## Single python3 class to delegate tasks to a subordinate object.
+## Python3 Class to delegate tasks to a subordinate object.
+Create proxies to methods or attributes via decorator, assignment, or automatic class embedding. 
 
-Class to delegate tasks to a subordinate object.
-
-Subordinates can be an existing object, or the name (str) of an instance//class attribute
-to be dynamically retrieved.
+Subordinates can be an existing object, or the name of an instance//class attribute to be dynamically retrieved.
 
 Supervisor can be a class instance, or a dict (keys are used as attribute names).
 
@@ -22,7 +20,7 @@ Supervisor can be a class instance, or a dict (keys are used as attribute names)
         # OR 
         # a single comma//space separated string: 'name1, name2, name3' // 'name1 name2 name3'
 
-#### Base classes for the following examples:
+#### Base classes for the README examples:
     
     class Sub():
         '''Subordinate class (helper for following examples).'''
@@ -43,27 +41,26 @@ Supervisor can be a class instance, or a dict (keys are used as attribute names)
 
 
 #### Delegate via assignment:
+    # Explicit delegation allows for renaming and some code completion.
     class ExplicitMaster(Master):
-        '''Explicit delegation allows for renaming and some code completion.'''
         attr1, ..., attr99 = delegated.tasks(sub, 'attr1, ..., attr99')
         method1, ..., method99 = delegated.tasks('sub', 'method1, ..., method99')
 
 
 #### Delegate via class embedding:
+    # Implicit delegation is simplest, but has least options.
     class ImplicitMaster(Master):
-        '''Implicit delegation is simplest.'''
         delegated.here('sub', 'attr1 attr2 ... attr99')
         delegated.here(sub, 'method1, method2, ..., method99')
 
 
 #### Delegate via decorator
+    #Decorating allows for renaming and some code completion.
+    #Note: The defined methods' signature (parameters, etc.) is irrelevant.
+    #      It may be useful, however, for reference."""
     
     class DecoratedMaster(Master):
-        '''Decorating allows for renaming and some code completion.
-        Note: the defined methods' signature (parameters, etc.) is irrelevant,
-        but may be useful for reference.'''
         ...
-        
         # keep method name, use `sub` object's `method1`
         @delegated('sub')
         def method1(self):
