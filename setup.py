@@ -5,14 +5,15 @@ with open('README.md', 'r') as fh:
 
 setup(
     name='delegated',
-    version="0.8",
+    version="20.1",
     author="timjolson",
     author_email="timjolson@users.noreply.github.com",
     description="Utility to quickly delegate attributes to subordinate objects via proxy (property).",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    license='GPLv3',
+    keywords='proxy delegate attribute',
     url="https://github.com/timjolson/delegated",
+    license='GPLv3',
     packages=find_packages(),
     tests_require=['pytest'],
     python_requires='>=3.0',
@@ -20,14 +21,13 @@ setup(
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ]
 )
 
 
-# with open("README.md", "r") as fh:
-#     long_description = fh.read()
+# https://packaging.python.org/guides/distributing-packages-using-setuptools/
 #
 # setup(
 #     name="example-pkg-YOUR-USERNAME-HERE", # Replace with your own username
@@ -64,4 +64,9 @@ setup(
 #           'Programming Language :: Python :: 3.3',
 #           'Programming Language :: Python :: 3.4',
 #           ],
+#           entry_points={
+#               'console_scripts': [
+#                   'sample=sample:main',
+#               ],
+#           },
 # )
