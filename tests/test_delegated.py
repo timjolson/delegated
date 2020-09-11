@@ -373,10 +373,10 @@ def test_nested_here():
     m.attr2 = 'test'
     assert m.attr2 is m.Sub.call_test_class().sub.call_test_instance().sub.attr2
 
-    assert m.method1() == m.Sub.sub.call_test_class().sub.method1()
+    assert m.method1() == m.Sub.call_test_class().sub.call_test_instance().sub.method1()
 
 
-def test_nested_here():
+def test_nested_decorated_here():
     class Master():
         def __init__(self):
             self.Sub = Subordinate()
