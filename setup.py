@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setup(
     name='delegated',
-    version="20.1",
+    version="0.1",
     author="timjolson",
     author_email="timjolson@users.noreply.github.com",
     description="Utility to quickly delegate attributes to subordinate objects via proxy (property).",
@@ -16,7 +16,7 @@ setup(
     license='GPLv3',
     packages=find_packages(),
     tests_require=['pytest'],
-    python_requires='>=3.0',
+    python_requires='>=3.7',
     classifiers=[  # https://pypi.org/classifiers/
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
