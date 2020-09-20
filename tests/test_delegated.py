@@ -1,9 +1,11 @@
 import pytest
 from delegated import delegated
 
-# import logging
-# logger = delegated.logger
-# logger.addHandler(logging.FileHandler('test.log', 'w'))
+import logging
+logger = delegated.logger
+logger.addHandler(logging.FileHandler('test.log', 'w'))
+logger.handlers[0].setFormatter(fmt=logging.Formatter('%(funcName)s:line %(lineno)d:%(message)s'))
+logger.setLevel(logging.INFO)
 
 
 class Subordinate():
@@ -331,16 +333,20 @@ def test_nested_tasks():
         def __init__(self):
             self.sub = Subordinate()
         delegated.here('Sub.sub.sub', 'attr1')
-        attr1 = delegated.tasks('sub.sub.call_test_instance().call_test_class().sub', 'attr1')
+        attr1_nested = delegated.tasks('sub.sub.call_test_instance().call_test_class().sub', 'attr1')
         attr2, attr3 = delegated.tasks('sub.call_test_class().sub.call_test_instance().sub', 'attr2, attr1')
         method1, method2 = delegated.tasks(Sub.sub.call_test_class().sub, 'method1, method2')
         method3 = delegated.tasks(Sub.sub.call_test_instance().sub, 'method1')
 
     m = Master()
 
-    assert m.attr1 is m.Sub.sub.call_test_instance().call_test_class().sub.attr1
+    assert m.attr1 is m.Sub.sub.sub.attr1
     m.attr1 = 'test'
-    assert m.attr1 is m.Sub.sub.call_test_instance().call_test_class().sub.attr1
+    assert m.attr1 is m.Sub.sub.sub.attr1
+
+    assert m.attr1_nested is m.Sub.sub.call_test_instance().call_test_class().sub.attr1
+    m.attr1_nested = 'test'
+    assert m.attr1_nested is m.Sub.sub.call_test_instance().call_test_class().sub.attr1
 
     assert m.attr2 is m.Sub.call_test_class().sub.call_test_instance().sub.attr2
     m.attr2 = 'test'
@@ -359,7 +365,6 @@ def test_nested_here():
     class Master():
         def __init__(self):
             self.Sub = Subordinate()
-        delegated.here('Sub.sub.sub', 'attr1')
         delegated.here('Sub.sub.call_test_instance().call_test_class().sub', 'attr1')
         delegated.here('Sub.call_test_class().sub.call_test_instance().sub', 'attr2, method1')
 
@@ -397,6 +402,27 @@ def test_nested_decorated_here():
     assert m.dec_method3() == m.Sub.sub.call_test_instance().call_test_class().sub.method1()
 
 
-#TODO: build tests for Dict supervisor
-#TODO: build tests for exceptions
+def test_attribute_error():
+    class Master():
+        Sub = Subordinate()
+        def __init__(self):
+            self.sub = Subordinate()
+        delegated.here('Sub.sub.sub', 'attr1')  # test deleted from subordinate
+        delegated.here('Sub.sub.sub', 'attr4')  # test missing from subordinate
 
+    m = Master()
+
+    del m.Sub.sub.sub.attr1
+    with pytest.raises(AttributeError):
+        try:
+            m.attr1
+        except Exception as err:
+            logger.debug(err)
+            raise
+
+    with pytest.raises(AttributeError):
+        try:
+            m.attr4
+        except Exception as err:
+            logger.debug(err)
+            raise

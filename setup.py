@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setup(
     name='delegated',
-    version="0.1",
+    version="0.2",
     author="timjolson",
     author_email="timjolson@users.noreply.github.com",
     description="Utility to quickly delegate attributes to subordinate objects via proxy (property).",
