@@ -7,7 +7,7 @@ setup(
     name='delegated',
     version="0.2",
     author="timjolson",
-    author_email="timjolson@users.noreply.github.com",
+    author_email="5532473+timjolson@users.noreply.github.com",
     description="Utility to quickly delegate attributes to subordinate objects via proxy (property).",
     long_description=long_description,
     long_description_content_type="text/markdown",
