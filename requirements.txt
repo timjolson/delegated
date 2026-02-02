@@ -1,0 +1,2 @@
+# Main dependencies for delegated
+# No runtime dependencies specified in setup.py

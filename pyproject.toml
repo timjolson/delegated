@@ -1,0 +1,26 @@
+[project]
+name = "delegated"
+version = "0.2"
+description = "Utility to quickly delegate attributes to subordinate objects via proxy (property)."
+authors = [
+    { name = "timjolson", email = "timjolson@users.noreply.github.com" }
+]
+readme = "README.md"
+license = { file = "LICENSE" }
+keywords = ["proxy", "delegate", "attribute"]
+homepage = "https://github.com/timjolson/delegated"
+requires-python = ">=3.7"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8"
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
