@@ -46,3 +46,7 @@ Subordinates can be an existing object, or the name of an instance//class attrib
     # Basic functions (no args) can be called to acquire deeper objects
     method = delegate.tasks('sub.sub2.retriever()', 'method_name')
     delegate.here('sub.retriever().sub2', 'method_name')
+
+## License
+
+See [LICENSE](LICENSE) for details.
